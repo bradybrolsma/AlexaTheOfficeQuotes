@@ -57,3 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# zip file used to put on AWS Lambda
+.uploadable
+
+# assets folder containing images for skill icon
+assets/
