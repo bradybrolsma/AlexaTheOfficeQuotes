@@ -12,7 +12,7 @@ function checkAnswer() {
   const current = this.event.request.intent.slots.Character.value;
   // Get who said the quote (we stored in in the session variables)
   const previous = this.attributes.Character;
-
+  
   let speechOutput = '';
   if (!previous) { // If there was no character stored in session
     speechOutput = "Oh, I didn't know we were playing. Would you like to play The Office Quiz?"
@@ -89,9 +89,9 @@ const handlers = {
     // YesIntent for when the user answers in the affirmative
     'YesIntent': function () {
       const quote = quizGameQuote.call(this);
-      const question = "Which character from The Office said the quote: "
+      const question = "Which character from The Office said the quote: ";
       const speechOutput = question + quote;
-      this.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
+      this.emit(':askWithCard', speechOutput, speechOutput, SKILL_NAME, speechOutput);
     },
     // HelpIntent when user says 'Help'
     'AMAZON.HelpIntent': function () {
@@ -106,6 +106,10 @@ const handlers = {
     // StopIntent when the user says 'no' or 'stop'
     'AMAZON.StopIntent': function () {
         this.emit(':tell', STOP_MESSAGE);
+    },
+    'Unhandled': function () {
+      console.log('in Unhandled');
+      this.emit(':ask', 'I did\'nt get that, what did you say?');
     }
 };
 
