@@ -1,7 +1,6 @@
 const Alexa = require('alexa-sdk');
 const data = require('./data.js');
-
-const APP_ID = "amzn1.ask.skill.efda1099-9dcc-4576-bfe1-15421985bd00";
+const APP_ID = "";
 const SKILL_NAME = "The Office Quotes & Quiz";
 const HELP_MESSAGE = "You can say give me a quote, or, you can say quiz me.. What can I help you with?";
 const HELP_REPROMPT = "What can I help you with?";
@@ -40,30 +39,71 @@ function getNewQuote() {
   return speechOutput;
 }
 
+function checkAnswer(userAnswer, correctAnswer) {
+  // only compare the first name
+  let fName = userAnswer.split(' ')[0].toLowerCase();
+  // check to see if the correct answer contains the first name of the
+  // user answer
+  return correctAnswer.toLowerCase().includes(fName);
+}
+
 
 const handlers = {
     // LaunchRequest when user says 'Alexa, open office quotes'
     'LaunchRequest': function () {
-        this.emit('GetNewQuoteIntent');
+      this.emit('GetNewQuoteIntent');
     },
     // GetNewQuoteIntent when user says 'Give me a quote'
     'GetNewQuoteIntent': function () {
-        const speechOutput = getNewQuote();
-        this.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
+      const speechOutput = getNewQuote();
+      this.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
+    },
+    // PlayQuizGameIntent when user says 'quiz me'
+    'PlayQuizGameIntent': function () {
+      const character = pickRandomCharacter(data); // get random character
+      this.attributes.answer = character; // save character in session
+      const quote = pickRandomQuote(character); // get random quote from character
+      let speechOutput = 'Who said the quote: ' + quote;
+      let reprompt = 'The quote is: ' + quote;
+      this.emit(':ask', speechOutput, reprompt); // alexa response
+    },
+    'UserAnswerIntent': function () {
+      const correctAnswer = this.attributes.answer; // stored in session
+      const userAnswer = this.event.request.intent.slots.userAnswer.value; // from slots
+
+      // if both have values
+      if(correctAnswer && userAnswer) {
+        const correct = checkAnswer(userAnswer, correctAnswer);
+        const correctSpeechOut = 'Correct! ';
+        const incorrectSpeechOut = `I'm sorry, that quote was from ${correctAnswer}. `
+        const repromt = 'Would you like to play again?';
+
+        if (correct) {
+          this.emit(':ask', correctSpeechOut + repromt, repromt);
+        } else if (!correct) {
+          this.emit(':ask', incorrectSpeechOut + repromt, repromt);
+        }
+      } else {
+        this.emit(':ask', 'Oh, would you like to play the quiz game?');
+      }
+
+    },
+    'YesIntent': function () {
+      this.emit('PlayQuizGameIntent');
     },
     // HelpIntent when user says 'Help'
     'AMAZON.HelpIntent': function () {
-        const speechOutput = HELP_MESSAGE;
-        const reprompt = HELP_REPROMPT;
-        this.emit(':ask', speechOutput, reprompt);
+      const speechOutput = HELP_MESSAGE;
+      const reprompt = HELP_REPROMPT;
+      this.emit(':ask', speechOutput, reprompt);
     },
     // CancelIntent when the user says 'cancel'
     'AMAZON.CancelIntent': function () {
-        this.emit(':tell', STOP_MESSAGE);
+      this.emit(':tell', STOP_MESSAGE);
     },
     // StopIntent when the user says 'no' or 'stop'
     'AMAZON.StopIntent': function () {
-        this.emit(':tell', STOP_MESSAGE);
+      this.emit(':tell', STOP_MESSAGE);
     }
 };
 
