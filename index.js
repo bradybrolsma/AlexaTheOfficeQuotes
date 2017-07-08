@@ -91,7 +91,7 @@ const handlers = {
       const quote = quizGameQuote.call(this);
       const question = "Which character from The Office said the quote: "
       const speechOutput = question + quote;
-      this.emit(':tellWithCard', speechOutput, SKILL_NAME, speechOutput);
+      this.emit(':askWithCard', speechOutput, SKILL_NAME, speechOutput);
     },
     // HelpIntent when user says 'Help'
     'AMAZON.HelpIntent': function () {
